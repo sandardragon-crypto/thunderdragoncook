@@ -155,3 +155,5 @@ io.on('connection', (socket) => {
 
 // クラウドサーバー(Render/Glitch)対応ポート設定
 const PORT = process.env.PORT || 3
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, '0.0.0.0', () => { console.log(`サーバー起動: ポート${PORT}`); });
