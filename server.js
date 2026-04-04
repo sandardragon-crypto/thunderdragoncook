@@ -72,7 +72,6 @@ io.on('connection', (socket) => {
         if (!room.finalDraftLog[finalName]) room.finalDraftLog[finalName] = [];
         
         io.to(roomId).emit('updatePlayers', room.players);
-        // ★この合図がないと画面が進みません！（超重要）
         socket.emit('nameAssigned', finalName); 
 
         if (socket.id === room.hostId) socket.emit('youAreHost'); else socket.emit('youAreNotHost');
@@ -80,6 +79,20 @@ io.on('connection', (socket) => {
 
     socket.on('leaveRoom', () => { handlePlayerLeave(socket); for (const room of socket.rooms) { if (room !== socket.id) socket.leave(room); } });
     socket.on('disconnect', () => { handlePlayerLeave(socket); });
+
+    // ★追加：司会者によるゴーストプレイヤーの強制退室
+    socket.on('kickPlayer', (roomId, targetId) => {
+        const room = rooms[roomId]; if (!room) return;
+        if (socket.id !== room.hostId) return; // 司会者のみ実行可能
+        
+        const targetSocket = io.sockets.sockets.get(targetId);
+        if (targetSocket) {
+            targetSocket.disconnect(true);
+        } else {
+            room.players = room.players.filter(p => p.id !== targetId);
+            io.to(roomId).emit('updatePlayers', room.players);
+        }
+    });
 
     socket.on('startMeeting', (roomId, settings) => {
         const room = rooms[roomId]; if (!room) return;
