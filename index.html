@@ -56,14 +56,12 @@
         @media (min-width: 600px) { .summary-details { width: 70%; } }
         .history-item { margin-bottom: 10px; padding: 12px; background: #0f172a; border-radius: 6px; border-left: 4px solid var(--primary); }
 
-        /* UIボタン関連 */
         #btn-ooh { position: fixed; bottom: 20px; right: 20px; width: 65px; height: 65px; border-radius: 50%; background-color: #f59e0b; color: #fff; font-size: 14px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 1000; display: none; cursor: pointer; border: 2px solid #fbbf24; }
         #btn-ooh:active { transform: scale(0.9); }
         #btn-ooh:disabled { background-color: #64748b; border-color: #475569; transform: none; cursor: not-allowed; }
         #btn-show-history { position: fixed; top: 10px; right: 10px; z-index: 1000; background-color: var(--primary); padding: 8px 12px; border-radius: 8px; display: none; font-size: 0.8em; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        #btn-bgm { position: fixed; top: 10px; left: 10px; z-index: 1000; background-color: #8b5cf6; padding: 8px 12px; border-radius: 8px; display: none; font-size: 0.8em; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        #btn-bgm { position: fixed; top: 10px; left: 10px; z-index: 1000; background-color: #8b5cf6; padding: 8px 12px; border-radius: 8px; display: none; font-size: 0.8em; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer; border: none; color: white; font-weight: bold; }
 
-        /* モーダル汎用スタイル */
         .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:3000; align-items:center; justify-content:center; }
         .modal-box { background:var(--panel); padding:25px; border-radius:10px; width:90%; max-width:600px; max-height:80vh; overflow-y:auto; border:2px solid var(--primary); text-align: left; line-height: 1.6; box-sizing: border-box;}
         .modal-box h2 { color: var(--primary); margin-top: 0; border-bottom: 2px solid #334155; padding-bottom: 10px; font-size: 1.3em;}
@@ -71,10 +69,8 @@
         .modal-box p, .modal-box ul { font-size: 0.95em; color: #cbd5e1; }
         .modal-close-btn { background:var(--gray); width:100%; margin-top:20px; }
 
-        /* SEO用 トップページ説明テキスト */
         .intro-text { font-size: 0.9em; color: var(--gray); margin-bottom: 25px; line-height: 1.5; }
         
-        /* フッターリンク群 */
         .footer { margin-top: 40px; padding: 20px 0; font-size: 0.8em; color: #64748b; }
         .footer a { color: #94a3b8; text-decoration: none; margin: 0 10px; cursor: pointer; transition: color 0.2s; }
         .footer a:hover { color: var(--primary); text-decoration: underline; }
@@ -84,7 +80,7 @@
 
     <h1>我らのドラフト会議</h1>
 
-    <button id="btn-bgm">🎵 BGM: OFF</button>
+    <button id="btn-bgm">🎵 BGM: ON</button>
     <button id="btn-show-history">指名状況を確認</button>
     <button id="btn-ooh">おぉ〜</button>
 
@@ -128,7 +124,7 @@
             <h3>第3条（サービスの提供の停止等）</h3>
             <p>運営者は，システムの保守点検や不可抗力により，ユーザーに事前に通知することなく本サービスの全部または一部の提供を停止または中断することができるものとします。</p>
             <h3>第4条（免責事項）</h3>
-            <p>運営者は，本サービスに事実上または法律上の瑕疵（安全性，信頼性，正確性，完全性，有効性，特定の目的への適合性，セキュリティなどに関する欠陥，エラーやバグ，権利侵害などを含みます。）がないことを明示的にも黙示的にも保証しておりません。本サービスに起因してユーザーに生じたあらゆる損害について一切の責任を負いません。</p>
+            <p>運営者は，本サービスに事実上または法律上の瑕疵がないことを明示的にも黙示的にも保証しておりません。本サービスに起因してユーザーに生じたあらゆる損害について一切の責任を負いません。</p>
             <button class="modal-close-btn" onclick="closeModal('terms-modal')">閉じる</button>
         </div>
     </div>
@@ -138,11 +134,11 @@
             <h2>プライバシーポリシー</h2>
             <p>本サービスは，ユーザーのプライバシー情報の取扱いについて，以下のとおりプライバシーポリシーを定めます。</p>
             <h3>第1条（個人情報の収集方法）</h3>
-            <p>本サービスは，会員登録等の手続きを必要とせず，利用者の氏名、住所、電話番号などの個人を特定できる情報を積極的に収集することはありません。アプリ内で入力される「監督名」や「手書き入力データ」は、セッション中の一時的なゲーム進行のためのみに使用され、永続的にデータベースへ保存されることはありません。</p>
+            <p>本サービスは，利用者の個人を特定できる情報を積極的に収集することはありません。アプリ内で入力されるデータは、セッション中の一時的なゲーム進行のためのみに使用されます。</p>
             <h3>第2条（アクセス解析ツールと広告について）</h3>
-            <p>本サービスでは，今後のサービス向上のため、また広告配信のために、サードパーティのアクセス解析ツールや広告配信サービス（Google AdSense等）を利用する場合があります。これらはトラフィックデータの収集や広告配信のためにCookie（クッキー）を使用することがあります。Cookieはブラウザの設定で無効にすることが可能です。</p>
+            <p>本サービスでは，今後のサービス向上のため、また広告配信のために、サードパーティのアクセス解析ツールや広告配信サービス（Google AdSense等）を利用する場合があります。これらはCookie（クッキー）を使用することがあります。</p>
             <h3>第3条（プライバシーポリシーの変更）</h3>
-            <p>本ポリシーの内容は，法令その他本ポリシーに別段の定めのある事項を除いて，ユーザーに通知することなく，変更することができるものとします。</p>
+            <p>本ポリシーの内容は，法令その他本ポリシーに別段の定めのある事項を除いて，ユーザーに通知することなく変更することができるものとします。</p>
             <button class="modal-close-btn" onclick="closeModal('privacy-modal')">閉じる</button>
         </div>
     </div>
@@ -259,7 +255,6 @@
         let isHost = false, currentRound = 1, maxRounds = 1, myName = "", myRoomId = "", isMyTurn = true;
         let timerInterval;
 
-        // モーダル制御関数
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
@@ -269,22 +264,25 @@
         // --- BGM制御 ---
         const bgmAudio = document.getElementById('bgm-audio');
         const btnBgm = document.getElementById('btn-bgm');
-        let isBgmPlaying = false;
+        let isBgmPlaying = true; // 最初はON状態とみなす
 
         btnBgm.addEventListener('click', () => {
             if (isBgmPlaying) {
-                bgmAudio.pause();
-                btnBgm.innerText = "🎵 BGM: OFF";
-                btnBgm.style.backgroundColor = "#8b5cf6";
+                stopBGM();
             } else {
-                bgmAudio.play().catch(e => {
-                    console.log("再生ブロックされました", e);
-                });
+                bgmAudio.play().catch(e => console.log("再生ブロック"));
+                isBgmPlaying = true;
                 btnBgm.innerText = "🎵 BGM: ON";
                 btnBgm.style.backgroundColor = "var(--success)";
             }
-            isBgmPlaying = !isBgmPlaying;
         });
+
+        function stopBGM() {
+            bgmAudio.pause();
+            isBgmPlaying = false;
+            btnBgm.innerText = "🎵 BGM: OFF";
+            btnBgm.style.backgroundColor = "#8b5cf6";
+        }
 
         // --- 音声関連（Web Audio API） ---
         let audioCtx;
@@ -317,7 +315,6 @@
         function sndTick() { playTone(1000, 'triangle', 0.05, 0.1); }
         function sndWin() { playTone(523.25, 'sine', 0.1); setTimeout(()=>playTone(659.25, 'sine', 0.1), 100); setTimeout(()=>playTone(783.99, 'sine', 0.4), 200); }
 
-        // --- おぉ〜ボタンの実装 ---
         const btnOoh = document.getElementById('btn-ooh');
         btnOoh.addEventListener('click', function() {
             if (!myRoomId) return;
@@ -371,11 +368,20 @@
             } 
         };
 
+        // ★ここでBGMを自動再生
         socket.on('nameAssigned', (assignedName) => {
             myName = assignedName;
             showScreen('step-waiting'); 
             btnOoh.style.display = 'block'; 
             btnBgm.style.display = 'block'; 
+            
+            // ボタンを押した直後なのでブラウザが再生を許可してくれる
+            bgmAudio.play().catch(e => {
+                console.log("自動再生がブロックされました", e);
+                isBgmPlaying = false;
+                btnBgm.innerText = "🎵 BGM: OFF";
+                btnBgm.style.backgroundColor = "#8b5cf6";
+            });
         });
 
         socket.on('youAreHost', () => { isHost = true; document.querySelectorAll('.host-only').forEach(e => e.style.display = 'block'); document.getElementById('role-msg').innerHTML = "あなたは<span style='color:#fbbf24'>司会者(ホスト)</span>です！"; });
@@ -392,6 +398,11 @@
             document.getElementById('display-theme').innerText = "テーマ: " + d.theme; 
             document.getElementById('final-theme-text').innerText = d.theme; 
             document.getElementById('btn-show-history').style.display = 'block'; 
+            
+            // ★ドラフト開始でBGMをストップし、ボタンも隠す
+            stopBGM();
+            btnBgm.style.display = 'none';
+
             showScreen('step-drafting'); 
         });
 
