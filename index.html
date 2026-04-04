@@ -148,6 +148,12 @@
             仲間とオンラインで手軽にドラフト会議を楽しめる無料シミュレーター。<br>
             お題に合わせてホワイトボードで指名！競合したら運命のルーレットで決着！
         </p>
+
+        <div id="qr-container" style="margin: 15px auto; display: none;">
+            <p style="font-size: 0.8em; color: var(--success); margin-bottom: 5px; font-weight: bold;">▼スマホで読み込んで参加！</p>
+            <img id="qr-img" src="" alt="QR Code" style="border: 4px solid white; border-radius: 8px; width: 120px; height: 120px;">
+        </div>
+
         <button onclick="openModal('howto-modal')" style="background-color: var(--panel); border: 2px solid var(--primary); color: var(--primary); padding: 10px 20px; font-size: 1em; margin-bottom: 20px;">📖 ドラフト会議の遊び方</button>
         
         <h2 style="color: var(--success); border-top: 1px solid #334155; padding-top: 20px;">ドラフト会場に入室</h2>
@@ -255,6 +261,13 @@
         let isHost = false, currentRound = 1, maxRounds = 1, myName = "", myRoomId = "", isMyTurn = true;
         let timerInterval;
 
+        // ★追加：起動時にQRコード生成とBGM音量の設定(30%)
+        window.onload = () => {
+            document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(window.location.href);
+            document.getElementById('qr-container').style.display = 'block';
+            document.getElementById('bgm-audio').volume = 0.3; 
+        };
+
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
@@ -264,7 +277,7 @@
         // --- BGM制御 ---
         const bgmAudio = document.getElementById('bgm-audio');
         const btnBgm = document.getElementById('btn-bgm');
-        let isBgmPlaying = true; // 最初はON状態とみなす
+        let isBgmPlaying = true; 
 
         btnBgm.addEventListener('click', () => {
             if (isBgmPlaying) {
@@ -345,10 +358,35 @@
             openModal('history-modal');
         });
 
+        // ★追加：キャンバスの座標を正確に計算（スマホ描画ズレの完全修正）
         const canvas = document.getElementById('whiteboard'); const ctx = canvas.getContext('2d'); let isDrawing = false;
         ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.strokeStyle = '#000';
-        function startPosition(e) { isDrawing = true; draw(e); } function endPosition() { isDrawing = false; ctx.beginPath(); }
-        function draw(e) { if (!isDrawing) return; const rect = canvas.getBoundingClientRect(); const x = (e.clientX || e.touches[0].clientX) - rect.left; const y = (e.clientY || e.touches[0].clientY) - rect.top; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
+
+        function getCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let clientX = e.clientX; let clientY = e.clientY;
+            if (e.touches && e.touches.length > 0) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+            return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+        }
+
+        function startPosition(e) { 
+            isDrawing = true; 
+            const pos = getCoords(e);
+            ctx.beginPath(); 
+            ctx.moveTo(pos.x, pos.y);
+        } 
+        function endPosition() { isDrawing = false; }
+        function draw(e) { 
+            if (!isDrawing) return; 
+            const pos = getCoords(e);
+            ctx.lineTo(pos.x, pos.y); 
+            ctx.stroke(); 
+            ctx.beginPath(); 
+            ctx.moveTo(pos.x, pos.y); 
+        }
+        
         canvas.addEventListener('mousedown', startPosition); canvas.addEventListener('mouseup', endPosition); canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startPosition(e); }, {passive: false}); canvas.addEventListener('touchend', endPosition); canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, {passive: false});
         document.getElementById('btn-clear-canvas').onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -368,14 +406,12 @@
             } 
         };
 
-        // ★ここでBGMを自動再生
         socket.on('nameAssigned', (assignedName) => {
             myName = assignedName;
             showScreen('step-waiting'); 
             btnOoh.style.display = 'block'; 
             btnBgm.style.display = 'block'; 
             
-            // ボタンを押した直後なのでブラウザが再生を許可してくれる
             bgmAudio.play().catch(e => {
                 console.log("自動再生がブロックされました", e);
                 isBgmPlaying = false;
@@ -384,11 +420,30 @@
             });
         });
 
+        // ★追加：司会者画面にキック（✖）ボタンを生成
+        socket.on('updatePlayers', ps => { 
+            currentPlayers = ps; 
+            const l = document.getElementById('players-list'); l.innerHTML = ''; 
+            ps.forEach(p => { 
+                const li = document.createElement('li'); 
+                li.innerText = p.name; 
+                
+                if (isHost && p.id !== socket.id) {
+                    const btnKick = document.createElement('button');
+                    btnKick.innerText = '✖';
+                    btnKick.style.padding = '2px 8px';
+                    btnKick.style.marginLeft = '10px';
+                    btnKick.style.fontSize = '0.7em';
+                    btnKick.style.backgroundColor = 'var(--accent)';
+                    btnKick.onclick = () => { if(confirm(`${p.name} を退室させますか？\n（タスクキル等で残ってしまったゴースト用）`)) socket.emit('kickPlayer', myRoomId, p.id); };
+                    li.appendChild(btnKick);
+                }
+                l.appendChild(li); 
+            }); 
+        });
+
         socket.on('youAreHost', () => { isHost = true; document.querySelectorAll('.host-only').forEach(e => e.style.display = 'block'); document.getElementById('role-msg').innerHTML = "あなたは<span style='color:#fbbf24'>司会者(ホスト)</span>です！"; });
         socket.on('youAreNotHost', () => { isHost = false; document.querySelectorAll('.host-only').forEach(e => e.style.display = 'none'); });
-        
-        let currentPlayers = [];
-        socket.on('updatePlayers', ps => { currentPlayers = ps; const l = document.getElementById('players-list'); l.innerHTML = ''; ps.forEach(p => { const li = document.createElement('li'); li.innerText = p.name; l.appendChild(li); }); });
 
         document.getElementById('input-theme').oninput = e => document.getElementById('btn-start-meeting').disabled = !e.target.value;
         document.getElementById('btn-start-meeting').onclick = () => { socket.emit('startMeeting', myRoomId, { theme: document.getElementById('input-theme').value, rounds: document.getElementById('select-rounds').value }); };
@@ -398,11 +453,6 @@
             document.getElementById('display-theme').innerText = "テーマ: " + d.theme; 
             document.getElementById('final-theme-text').innerText = d.theme; 
             document.getElementById('btn-show-history').style.display = 'block'; 
-            
-            // ★ドラフト開始でBGMをストップし、ボタンも隠す
-            stopBGM();
-            btnBgm.style.display = 'none';
-
             showScreen('step-drafting'); 
         });
 
@@ -426,6 +476,10 @@
         socket.on('startWhiteboardReveal', async (picks) => {
             document.getElementById('host-status-area').style.display = 'none';
             showScreen('step-reveal');
+            
+            // ★追加：発表の瞬間だけBGMを一時停止する
+            if (isBgmPlaying) bgmAudio.pause();
+
             const title = document.getElementById('rev-title'); const nameEl = document.getElementById('rev-name'); 
             const imgEl = document.getElementById('rev-image'); const pickEl = document.getElementById('rev-pick-text');
             const rouletteEl = document.getElementById('rev-roulette');
@@ -506,6 +560,10 @@
         });
 
         function renderFinalResults(results, allDone) {
+            // ★追加：ここで「〇巡目」の数字を正しく更新し、BGMを再開する
+            document.getElementById('result-round-num').innerText = currentRound;
+            if (isBgmPlaying) bgmAudio.play().catch(e => {});
+
             showScreen('step-result');
             const l = document.getElementById('result-list'); l.innerHTML = '';
             
