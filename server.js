@@ -22,7 +22,6 @@ function handlePlayerLeave(socket) {
     if (!targetRoomId) return;
     const room = rooms[targetRoomId];
     
-    // ★バグ修正5: 抜けた人を成功者リストや提出リストからも確実に削除する（進行不能バグの根本原因）
     room.players = room.players.filter(p => p.id !== socket.id);
     room.roundSuccessMembers.delete(socket.id);
     delete room.currentPicks[socket.id];
@@ -37,7 +36,7 @@ function handlePlayerLeave(socket) {
         const submittedCount = Object.keys(room.currentPicks).filter(id => room.players.find(p => p.id === id)).length;
 
         if (expectedCount > 0 && submittedCount >= expectedCount) {
-            // ★バグ修正2: 勝手に画面を飛ばさず、ホストに「全員完了」の合図だけを送る
+            // ★全員提出完了の合図（勝手に飛ばさず手動ボタンを解禁させる）
             io.to(targetRoomId).emit('allPlayersSubmitted');
         }
     }
@@ -61,7 +60,6 @@ io.on('connection', (socket) => {
     socket.on('join', (roomId, name) => {
         const room = rooms[roomId]; if (!room) return;
 
-        // ★バグ修正1&6: 定員オーバーや、既に進行中の部屋には絶対に入れないように弾く
         if (room.players.length >= 10) { socket.emit('roomError', 'この部屋は満員（最大10人）です！'); return; }
         if (room.phase !== 'waiting') { socket.emit('roomError', '既にドラフト会議が進行中のため入室できません！'); return; }
 
@@ -86,6 +84,7 @@ io.on('connection', (socket) => {
     socket.on('leaveRoom', () => { handlePlayerLeave(socket); for (const room of socket.rooms) { if (room !== socket.id) socket.leave(room); } });
     socket.on('disconnect', () => { handlePlayerLeave(socket); });
 
+    // ★司会者によるキック機能
     socket.on('kickPlayer', (roomId, targetId) => {
         const room = rooms[roomId]; if (!room) return;
         if (socket.id !== room.hostId) return; 
@@ -130,12 +129,13 @@ io.on('connection', (socket) => {
             const expectedCount = room.players.filter(p => !room.roundSuccessMembers.has(p.id)).length;
             const submittedCount = Object.keys(room.currentPicks).length;
             if (submittedCount >= expectedCount) {
-                // ★バグ修正2: 勝手に飛ばさず、ホストにボタン解禁の合図を出す
+                // ★全員提出完了の合図
                 io.to(roomId).emit('allPlayersSubmitted');
             }
         }
     });
 
+    // ★手動進行ボタンが押された時の処理
     socket.on('forceJudgment', (roomId) => {
         const room = rooms[roomId]; if (!room) return;
         if (room.phase === 'drafting') {
@@ -158,7 +158,7 @@ io.on('connection', (socket) => {
         activePlayers.forEach(p => {
             let pickText = judgments[p.id] || "未入力";
             
-            // ★バグ修正3: 「未入力」の場合は即座に失敗扱い（外れ再指名）に回す
+            // ★「未入力」の場合は即座に失敗扱い（外れ再指名）に回す
             if (pickText === "未入力") {
                 room.roundResultsList[p.id] = { playerName: p.name, pick: "未入力（時間切れ/エラー）", status: 'lost', isDuplicate: false };
                 room.finalDraftLog[p.name].push("未入力" + statusText);
@@ -194,7 +194,6 @@ io.on('connection', (socket) => {
             }
         }
 
-        // ★バグ修正5: 進行不能ループの解消。現在いるプレイヤーだけで正確に計算する
         const allDone = room.players.length > 0 && room.players.every(p => room.roundSuccessMembers.has(p.id));
         const fullResultsArray = Object.values(room.roundResultsList); 
         io.to(roomId).emit('showRoundResults', { roulettes: rouletteSequence, results: fullResultsArray, allDone: allDone });
