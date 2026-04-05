@@ -7,7 +7,6 @@
     <meta name="description" content="友達や仲間とスマホで手軽にドラフト会議を楽しめる無料のオンラインシミュレーターアプリ。インストール不要、合言葉を入れるだけでホワイトボード形式の指名や競合ルーレットが楽しめます。">
     
     <style>
-        /* 新しいデザインのスタイル定義 */
         :root { --bg: #0f172a; --panel: #1e293b; --text: #f8fafc; --primary: #3b82f6; --primary-hover: #2563eb; --accent: #f43f5e; --success: #10b981; --gray: #64748b; }
         body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; padding: 20px 10px; background-color: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; }
         h1 { color: #fff; text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); font-size: 2.2em; margin-bottom: 20px;}
@@ -15,15 +14,15 @@
         .screen { display: none; background: var(--panel); padding: 30px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-width: 700px; margin: 0 auto; border: 1px solid #334155; position: relative; }
         .active-screen { display: block; }
         
-        /* 退出・戻るボタン用 */
-        .btn-leave { background-color: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; font-size: 0.9em; box-shadow: none; margin-top: 30px; }
-        .btn-leave:hover { background-color: rgba(244, 63, 94, 0.1); color: var(--accent); }
-
         input[type="text"], select { padding: 12px; font-size: 1.1em; width: 90%; max-width: 400px; margin: 10px 0; border: 1px solid #475569; border-radius: 6px; background: #0f172a; color: white; box-sizing: border-box;}
         button { padding: 15px 25px; font-size: 1.1em; margin: 10px 5px; cursor: pointer; border: none; border-radius: 6px; background-color: var(--primary); color: white; font-weight: bold; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
         button:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
-        button:disabled { background-color: #475569; cursor: not-allowed; color: #94a3b8 !important; transform: none; box-shadow: none; }
+        button:disabled { background-color: #475569 !important; cursor: not-allowed; color: #94a3b8 !important; transform: none; box-shadow: none; }
         
+        /* 退出ボタン用 */
+        .btn-leave { background-color: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; font-size: 0.9em; box-shadow: none; margin-top: 30px; }
+        .btn-leave:hover { background-color: rgba(244, 63, 94, 0.1); color: var(--accent); }
+
         #timerDisplay { font-size: 4em; color: var(--accent); font-weight: bold; text-shadow: 0 0 15px rgba(244, 63, 94, 0.5); }
         #whiteboard { border: 3px solid #cbd5e1; background-color: white; border-radius: 8px; cursor: crosshair; touch-action: none; margin: 15px auto; display: block; max-width: 100%; }
         
@@ -77,7 +76,7 @@
         .theme-list a { color: var(--text); text-decoration: none; display: block; padding: 10px; background: #0f172a; border-radius: 6px; border: 1px solid #334155; transition: 0.2s;}
         .theme-list a:hover { background: var(--primary); border-color: var(--primary); }
 
-        /* フッターリンク群 */
+        /* 利用規約フッター */
         .footer { margin-top: 40px; padding: 20px 0; font-size: 0.8em; color: #64748b; }
         .footer a { color: #94a3b8; text-decoration: none; margin: 0 10px; cursor: pointer; transition: color 0.2s; }
         .footer a:hover { color: var(--primary); text-decoration: underline; }
@@ -113,7 +112,7 @@
                 <li><a href="#" onclick="setTheme('ディズニーで回るアトラクション')">🎢 ディズニーで回るアトラクション</a></li>
                 <li><a href="#" onclick="setTheme('外国旅行に行くならどこ？')">✈️ 外国旅行に行くならどこ？</a></li>
                 <li><a href="#" onclick="setTheme('私のドラマをつくるならこの俳優！')">🎬 私のドラマをつくるならこの俳優！</a></li>
-                <li><a href="#" onclick="setTheme('ポケモンドラフトバトル')">⚡ポケモンドラフトバトル</a></li>
+                <li><a href="#" onclick="setTheme('ポケモンドラフトバトル')">⚡ ポケモンドラフトバトル</a></li>
                 <li><a href="#" onclick="setTheme('俺の祭りの屋台を見てくれ〜')">🏮 俺の祭りの屋台を見てくれ〜</a></li>
                 <li><a href="#" onclick="setTheme('今年の理想ドラフト')">⚾ 今年の理想ドラフト</a></li>
                 <li><a href="#" onclick="setTheme('このモノマネならできるデスマッチ')">🎤 このモノマネならできるデスマッチ</a></li>
@@ -125,11 +124,74 @@
         </div>
     </div>
 
+    <div id="howto-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>📖 ドラフト会議のやり方</h2>
+            <p>仲間と集まって、テーマに沿った最強の構成を作り上げるシミュレーターです！</p>
+            <h3>1. 部屋の準備（司会者）</h3>
+            <p>代表者1名が合言葉を入力して部屋を作ります。テーマと巡回数を設定し、参加者を待ちます。</p>
+            <h3>2. 参加者の入室</h3>
+            <p>他のメンバーは同じ合言葉を入力し、自分の「監督名」を決めて入室します。</p>
+            <h3>3. ドラフト開始！</h3>
+            <p>司会者がスタートを押すと指名開始！制限時間内に、ホワイトボードに手書きで欲しい選手（項目）を書き込んで提出します。</p>
+            <h3>4. 運命の発表＆ルーレット</h3>
+            <p>全員の指名が一斉に発表されます！もし他の監督と指名が被ってしまったら、交渉権をかけた「運命のルーレット」に突入します！</p>
+            <button class="modal-close-btn" onclick="closeModal('howto-modal')">閉じる</button>
+        </div>
+    </div>
+
+    <div id="qr-modal" class="modal-overlay">
+        <div class="modal-box" style="text-align: center;">
+            <h2>📱 参加用QRコード</h2>
+            <img id="modal-qr-img" src="" alt="QR Code" style="border: 4px solid white; border-radius: 8px; width: 150px; height: 150px; margin: 20px auto;">
+            <p style="font-size: 0.9em; color: var(--gray);">スマホのカメラで読み込んで参加できます！</p>
+            <button class="modal-close-btn" onclick="closeModal('qr-modal')">閉じる</button>
+        </div>
+    </div>
+
+    <div id="terms-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>利用規約</h2>
+            <p>この利用規約（以下，「本規約」といいます。）は，本ウェブサービス「我らのドラフト会議」（以下，「本サービス」といいます。）の利用条件を定めるものです。ユーザーの皆さまには，本規約に従って本サービスをご利用いただきます。</p>
+            <h3>第1条（適用）</h3>
+            <p>本規約は，ユーザーと本サービス運営者との間の本サービスの利用に関わる一切の関係に適用されるものとします。</p>
+            <h3>第2条（禁止事項）</h3>
+            <p>ユーザーは，本サービスの利用にあたり，以下の行為をしてはなりません。<br>
+            ・公序良俗に違反する行為<br>・犯罪行為に関連する行為<br>・本サービスのサーバーやネットワークの機能を破壊したり，妨害したりする行為<br>・他のユーザーに関する個人情報等を収集または蓄積する行為<br>・他のユーザーに成りすます行為<br>・その他，運営者が不適切と判断する行為</p>
+            <h3>第3条（サービスの提供の停止等）</h3>
+            <p>運営者は，システムの保守点検や不可抗力により，ユーザーに事前に通知することなく本サービスの全部または一部の提供を停止または中断することができるものとします。</p>
+            <h3>第4条（免責事項）</h3>
+            <p>運営者は，本サービスに事実上または法律上の瑕疵がないことを明示的にも黙示的にも保証しておりません。本サービスに起因してユーザーに生じたあらゆる損害について一切の責任を負いません。</p>
+            <button class="modal-close-btn" onclick="closeModal('terms-modal')">閉じる</button>
+        </div>
+    </div>
+
+    <div id="privacy-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>プライバシーポリシー</h2>
+            <p>本サービスは，ユーザーのプライバシー情報の取扱いについて，以下のとおりプライバシーポリシーを定めます。</p>
+            <h3>第1条（個人情報の収集方法）</h3>
+            <p>本サービスは，利用者の個人を特定できる情報を積極的に収集することはありません。アプリ内で入力されるデータは、セッション中の一時的なゲーム進行のためのみに使用されます。</p>
+            <h3>第2条（アクセス解析ツールと広告について）</h3>
+            <p>本サービスでは，今後のサービス向上のため、また広告配信のために、サードパーティのアクセス解析ツールや広告配信サービス（Google AdSense等）を利用する場合があります。これらはCookie（クッキー）を使用することがあります。</p>
+            <h3>第3条（プライバシーポリシーの変更）</h3>
+            <p>本ポリシーの内容は，法令その他本ポリシーに別段の定めのある事項を除いて，ユーザーに通知することなく変更することができるものとします。</p>
+            <button class="modal-close-btn" onclick="closeModal('privacy-modal')">閉じる</button>
+        </div>
+    </div>
+
     <div id="step-password" class="screen active-screen">
+        <p style="font-size: 0.9em; color: var(--gray); margin-bottom: 25px; line-height: 1.5;">
+            仲間とオンラインで手軽にドラフト会議を楽しめる無料シミュレーター。<br>
+            お題に合わせてホワイトボードで指名！競合したら運命のルーレットで決着！
+        </p>
+
         <div id="qr-container" style="margin: 15px auto; display: none;">
             <p style="font-size: 0.8em; color: var(--success); margin-bottom: 5px; font-weight: bold;">▼スマホで読み込んで参加！</p>
             <img id="qr-img" src="" alt="QR Code" style="border: 4px solid white; border-radius: 8px; width: 120px; height: 120px;">
         </div>
+
+        <button onclick="openModal('howto-modal')" style="background-color: var(--panel); border: 2px solid var(--primary); color: var(--primary); padding: 10px 20px; font-size: 1em; margin-bottom: 20px;">📖 ドラフト会議の遊び方</button>
         
         <h2 style="color: var(--success); border-top: 1px solid #334155; padding-top: 20px;">ドラフト会場に入室</h2>
         <input type="text" id="input-password" placeholder="部屋の合言葉を入力"><br>
@@ -147,6 +209,9 @@
 
     <div id="step-waiting" class="screen">
         <h2 id="role-msg">参加者を待機中...</h2>
+        
+        <button onclick="openModal('qr-modal')" style="background-color: var(--panel); border: 2px solid var(--primary); color: var(--primary); padding: 8px 15px; margin-bottom: 15px; font-size: 0.9em;">📱 QRコードを表示</button>
+
         <div id="host-settings" class="host-only">
             <h3 style="color:#fbbf24;">★司会者メニュー</h3>
             
@@ -236,14 +301,288 @@
     </div>
 
     <div class="footer">
-        <a href="https://note.com/your_account/n/terms_of_service" target="_blank">利用規約</a> | 
-        <a href="https://note.com/your_account/n/privacy_policy" target="_blank">プライバシーポリシー</a> | 
+        <a onclick="openModal('terms-modal')">利用規約</a> | 
+        <a onclick="openModal('privacy-modal')">プライバシーポリシー</a> | 
         <a href="https://x.com/thundeluck" target="_blank">お問い合わせ</a>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // JavaScriptロジック（サーバー側の修正に合わせて一部調整が必要になる場合があります）
+        const socket = io();
+        let isHost = false, currentRound = 1, maxRounds = 1, myName = "", myRoomId = "", isMyTurn = true;
+        let timerInterval;
+
+        // ★起動時にQR生成とBGM音量(15%)設定
+        window.onload = () => {
+            const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(window.location.href);
+            document.getElementById('qr-img').src = qrUrl;
+            document.getElementById('modal-qr-img').src = qrUrl;
+            document.getElementById('qr-container').style.display = 'block';
+            document.getElementById('bgm-audio').volume = 0.15;
+        };
+
+        // UI制御関数
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function setTheme(theme) { document.getElementById('input-theme').value = theme; document.getElementById('btn-start-meeting').disabled = false; closeModal('theme-hint-modal'); }
+        function leaveRoomAndGoHome() { socket.emit('leaveRoom'); location.reload(); }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        // BGM制御
+        const bgmAudio = document.getElementById('bgm-audio');
+        const btnBgm = document.getElementById('btn-bgm');
+        let isBgmPlaying = true; 
+
+        btnBgm.addEventListener('click', () => {
+            if (isBgmPlaying) { stopBGM(); } 
+            else { bgmAudio.play().catch(e=>{}); isBgmPlaying = true; btnBgm.innerText = "🎵 BGM: ON"; btnBgm.style.backgroundColor = "var(--success)"; }
+        });
+        function stopBGM() { bgmAudio.pause(); isBgmPlaying = false; btnBgm.innerText = "🎵 BGM: OFF"; btnBgm.style.backgroundColor = "#8b5cf6"; }
+
+        // Web Audio API（効果音）
+        let audioCtx;
+        function initAudio() { try { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if(audioCtx.state === 'suspended') audioCtx.resume(); } catch(e) {} }
+        function playTone(freq, type, duration, vol=0.1) { if(!audioCtx) return; try { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime); gain.gain.setValueAtTime(vol, audioCtx.currentTime); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration); } catch(e) {} }
+        function sndTaiko() { if(!audioCtx) return; try { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.frequency.setValueAtTime(150, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15); gain.gain.setValueAtTime(1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.4); } catch(e) {} }
+        function sndConflict() { playTone(800, 'sine', 0.1, 0.1); setTimeout(() => playTone(800, 'sine', 0.1, 0.1), 150); }
+        function sndTick() { playTone(1000, 'triangle', 0.05, 0.1); }
+        function sndWin() { playTone(523.25, 'sine', 0.1); setTimeout(()=>playTone(659.25, 'sine', 0.1), 100); setTimeout(()=>playTone(783.99, 'sine', 0.4), 200); }
+        function playClickSnd() { playTone(1200, 'sine', 0.05, 0.03); }
+
+        document.addEventListener('click', (e) => {
+            if(e.target.tagName === 'BUTTON' && e.target.id !== 'btn-ooh' && e.target.id !== 'btn-bgm') {
+                if(audioCtx) playClickSnd();
+            }
+        });
+
+        // おぉ〜ボタン
+        const btnOoh = document.getElementById('btn-ooh');
+        btnOoh.addEventListener('click', function() {
+            if (!myRoomId) return; socket.emit('sendOoh', myRoomId);
+            btnOoh.disabled = true; let countdown = 10; btnOoh.innerText = countdown;
+            const cdInterval = setInterval(() => { countdown--; btnOoh.innerText = countdown; if (countdown <= 0) { clearInterval(cdInterval); btnOoh.disabled = false; btnOoh.innerText = "おぉ〜"; } }, 1000);
+        });
+
+        socket.on('playOohSound', () => {
+            const oohAudio = new Audio('/public/ooh.mp3'); oohAudio.volume = 0.5;
+            oohAudio.play().catch(e => { if(audioCtx) { playTone(400, 'sine', 0.5, 0.05); playTone(500, 'sine', 0.5, 0.05); playTone(600, 'sine', 0.5, 0.05); } });
+        });
+
+        document.getElementById('btn-show-history').onclick = () => { if(myRoomId) socket.emit('requestCurrentHistory', myRoomId); };
+        socket.on('currentHistoryData', (log) => {
+            const content = document.getElementById('history-content'); content.innerHTML = '';
+            for (let name in log) { const picks = log[name].map((p, i) => `${i+1}巡目: ${p}`).join('<br>'); content.innerHTML += `<div style="margin-bottom:15px; border-bottom:1px solid #334155; padding-bottom:10px;"><strong>${name}</strong><br><span style="color:#94a3b8; font-size:0.9em;">${picks || 'まだ指名がありません'}</span></div>`; }
+            openModal('history-modal');
+        });
+
+        // お絵かきキャンバス制御（スマホズレ対策済み）
+        const canvas = document.getElementById('whiteboard'); const ctx = canvas.getContext('2d'); let isDrawing = false;
+        ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.strokeStyle = '#000';
+        function getCoords(e) { const rect = canvas.getBoundingClientRect(); const scaleX = canvas.width / rect.width; const scaleY = canvas.height / rect.height; let clientX = e.clientX; let clientY = e.clientY; if (e.touches && e.touches.length > 0) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; } return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY }; }
+        function startPosition(e) { isDrawing = true; const pos = getCoords(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); } 
+        function endPosition() { isDrawing = false; }
+        function draw(e) { if (!isDrawing) return; const pos = getCoords(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); }
+        canvas.addEventListener('mousedown', startPosition); canvas.addEventListener('mouseup', endPosition); canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startPosition(e); }, {passive: false}); canvas.addEventListener('touchend', endPosition); canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, {passive: false});
+        document.getElementById('btn-clear-canvas').onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
+        function getCanvasData() { return canvas.toDataURL('image/png'); }
+
+        // 入室ロジック
+        document.getElementById('btn-submit-pass').onclick = () => { initAudio(); myRoomId = document.getElementById('input-password').value.trim(); if(myRoomId) { document.getElementById('pass-error').innerText = ""; socket.emit('joinRoomRequest', myRoomId); } else { document.getElementById('pass-error').innerText = "合言葉を入力してください！"; } };
+        socket.on('roomJoinedOk', () => { document.getElementById('pass-error').innerText = ""; showScreen('step-name'); });
+        socket.on('roomError', m => { alert(m); document.getElementById('pass-error').innerText = m; });
+        
+        document.getElementById('btn-submit-name').onclick = () => { 
+            myName = document.getElementById('input-name').value.trim(); 
+            if(myName) { document.getElementById('name-error').innerText = ""; socket.emit('join', myRoomId, myName); } 
+            else { document.getElementById('name-error').innerText = "チーム名・監督名を入力してください！"; } 
+        };
+
+        socket.on('nameAssigned', (assignedName) => {
+            myName = assignedName; showScreen('step-waiting'); 
+            btnOoh.style.display = 'block'; btnBgm.style.display = 'block'; 
+            bgmAudio.play().catch(e => { isBgmPlaying = false; btnBgm.innerText = "🎵 BGM: OFF"; btnBgm.style.backgroundColor = "#8b5cf6"; });
+        });
+
+        // プレイヤー更新とキック機能
+        socket.on('updatePlayers', ps => { 
+            currentPlayers = ps; const l = document.getElementById('players-list'); l.innerHTML = ''; 
+            ps.forEach(p => { 
+                const li = document.createElement('li'); li.innerText = p.name; 
+                if (isHost && p.id !== socket.id) {
+                    const btnKick = document.createElement('button'); btnKick.innerText = '✖'; btnKick.style.padding = '2px 8px'; btnKick.style.marginLeft = '10px'; btnKick.style.fontSize = '0.7em'; btnKick.style.backgroundColor = 'var(--accent)';
+                    btnKick.onclick = () => { if(confirm(`${p.name} を退室させますか？\n（エラーで残ってしまったゴースト用）`)) socket.emit('kickPlayer', myRoomId, p.id); };
+                    li.appendChild(btnKick);
+                }
+                l.appendChild(li); 
+            }); 
+        });
+
+        socket.on('youAreHost', () => { isHost = true; document.querySelectorAll('.host-only').forEach(e => e.style.display = 'block'); document.getElementById('role-msg').innerHTML = "あなたは<span style='color:#fbbf24'>司会者(ホスト)</span>です！"; });
+        socket.on('youAreNotHost', () => { isHost = false; document.querySelectorAll('.host-only').forEach(e => e.style.display = 'none'); });
+
+        document.getElementById('input-theme').oninput = e => document.getElementById('btn-start-meeting').disabled = !e.target.value;
+        document.getElementById('btn-start-meeting').onclick = () => { socket.emit('startMeeting', myRoomId, { theme: document.getElementById('input-theme').value, rounds: document.getElementById('select-rounds').value }); };
+        
+        socket.on('meetingStarted', d => { 
+            maxRounds = parseInt(d.rounds); document.getElementById('display-theme').innerText = "テーマ: " + d.theme; document.getElementById('final-theme-text').innerText = d.theme; document.getElementById('btn-show-history').style.display = 'block'; 
+            showScreen('step-drafting'); 
+        });
+
+        document.getElementById('btn-start-round').onclick = () => socket.emit('startRound', myRoomId, currentRound, 60, false);
+        document.getElementById('btn-re-nominate').onclick = () => socket.emit('startRound', myRoomId, currentRound, 30, true);
+
+        socket.on('startTimer', d => {
+            showScreen('step-drafting'); document.getElementById('host-round-controls').style.display = 'none'; const t = document.getElementById('timerDisplay'); t.style.display = 'block';
+            
+            if (isHost) {
+                const btnForce = document.getElementById('btn-force-judgment');
+                btnForce.disabled = true; btnForce.innerText = "全員の提出を待っています..."; btnForce.style.backgroundColor = "var(--gray)";
+            }
+
+            isMyTurn = !d.successMembers.includes(socket.id);
+            if (isMyTurn) { document.getElementById('pick-area').style.display = 'block'; document.getElementById('wait-pick-msg').style.display = 'none'; ctx.clearRect(0, 0, canvas.width, canvas.height); } else { document.getElementById('pick-area').style.display = 'none'; document.getElementById('wait-pick-msg').innerText = "あなたは獲得済みです。待機中..."; document.getElementById('wait-pick-msg').style.display = 'block'; }
+            if (isHost) { document.getElementById('host-status-area').style.display = 'block'; const sCont = document.getElementById('status-container'); sCont.innerHTML = ''; currentPlayers.forEach(p => { if(!d.successMembers.includes(p.id)) { sCont.innerHTML += `<div class="status-item" id="status-${p.id}"><span class="status-dot"></span>${p.name}</div>`; } }); }
+            let left = d.seconds; t.innerText = left; if(timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => { left--; t.innerText = left; if(left <= 0) { clearInterval(timerInterval); t.style.display = 'none'; if (isMyTurn) forceSubmitPick(); } }, 1000);
+        });
+
+        document.getElementById('btn-submit-early').onclick = () => { forceSubmitPick(); };
+        function forceSubmitPick() { if(!isMyTurn) return; isMyTurn = false; document.getElementById('pick-area').style.display = 'none'; document.getElementById('wait-pick-msg').innerText = "提出完了！全員の提出を待っています..."; document.getElementById('wait-pick-msg').style.display = 'block'; socket.emit('submitPickEarly', myRoomId, getCanvasData()); }
+        socket.on('playerSubmitted', (playerId) => { if(!isHost) return; const item = document.getElementById(`status-${playerId}`); if(item) item.querySelector('.status-dot').classList.add('done'); });
+        
+        // ★全員提出完了で手動進行ボタン解禁
+        socket.on('allPlayersSubmitted', () => {
+            if (isHost) {
+                const btnForce = document.getElementById('btn-force-judgment');
+                btnForce.disabled = false; btnForce.innerText = "全員完了！公開へ進む"; btnForce.style.backgroundColor = "var(--success)";
+            }
+        });
+        
+        document.getElementById('btn-force-judgment').onclick = () => { clearInterval(timerInterval); document.getElementById('timerDisplay').style.display = 'none'; socket.emit('forceJudgment', myRoomId); };
+
+        // ★未入力ボタン機能
+        window.setUnsubmitted = function(id) {
+            const input = document.querySelector(`.judge-input[data-id="${id}"]`);
+            if (input) input.value = "未入力";
+        }
+
+        socket.on('startWhiteboardReveal', async (picks) => {
+            document.getElementById('host-status-area').style.display = 'none';
+            showScreen('step-reveal');
+            
+            if (isBgmPlaying) bgmAudio.pause(); // 発表時BGMストップ
+
+            const title = document.getElementById('rev-title'); const nameEl = document.getElementById('rev-name'); 
+            const imgEl = document.getElementById('rev-image'); const pickEl = document.getElementById('rev-pick-text');
+            const rouletteEl = document.getElementById('rev-roulette');
+
+            const kanjiNums = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
+            const roundKanji = kanjiNums[currentRound] || currentRound;
+
+            for (const p of picks) {
+                imgEl.style.display = 'none'; pickEl.style.display = 'none'; rouletteEl.style.display = 'none';
+                title.innerText = `第${roundKanji}回 選択希望選手`;
+                nameEl.innerText = p.name + " 監督";
+                nameEl.classList.remove('reveal-conflict');
+
+                await sleep(4000); 
+                sndTaiko();
+                imgEl.src = p.image || ''; imgEl.style.display = 'block';
+                await sleep(3500); 
+            }
+
+            if (isHost) {
+                showScreen('step-judging');
+                document.getElementById('host-judge-area').style.display = 'block';
+                document.getElementById('participant-wait-area').style.display = 'none';
+                const list = document.getElementById('judge-list'); list.innerHTML = '';
+                picks.forEach(p => {
+                    list.innerHTML += `
+                        <div class="judge-item">
+                            <div style="width: 25%; font-weight: bold;">${p.name} 監督</div>
+                            <img src="${p.image || ''}" alt="未提出">
+                            <div style="width: 50%; display: flex; flex-direction: column;">
+                                <input type="text" class="judge-input" data-id="${p.id}" placeholder="読み取った文字" style="width: 90%;">
+                                <button onclick="setUnsubmitted('${p.id}')" style="padding: 5px; font-size: 0.8em; background: var(--gray); border-radius: 4px; margin: 0; width: 90%;">未入力（再指名へ）</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                showScreen('step-judging');
+                document.getElementById('host-judge-area').style.display = 'none';
+                document.getElementById('participant-wait-area').style.display = 'block';
+            }
+        });
+
+        document.getElementById('btn-submit-judgment').onclick = () => {
+            const inputs = document.querySelectorAll('.judge-input'); let judgments = {}; let hasEmpty = false;
+            inputs.forEach(inp => { inp.classList.remove('error'); const val = inp.value.trim(); if (!val) { hasEmpty = true; inp.classList.add('error'); } judgments[inp.dataset.id] = val; });
+            if (hasEmpty) { alert('未入力の判定があります！描けなかった人は「未入力（再指名へ）」ボタンを押してください。'); return; }
+            socket.emit('submitJudgment', myRoomId, judgments);
+        };
+
+        socket.on('showRoundResults', async (data) => {
+            const title = document.getElementById('rev-title'); const nameEl = document.getElementById('rev-name'); 
+            const imgEl = document.getElementById('rev-image'); const pickEl = document.getElementById('rev-pick-text');
+            const rouletteEl = document.getElementById('rev-roulette');
+
+            if (data.roulettes.length > 0) {
+                showScreen('step-reveal');
+                for (const r of data.roulettes) {
+                    imgEl.style.display = 'none'; pickEl.style.display = 'none'; rouletteEl.style.display = 'none';
+                    sndConflict(); 
+                    title.innerText = "【指名重複（競合）】";
+                    nameEl.innerText = r.players.map(p => p.name).join(' / ');
+                    nameEl.classList.add('reveal-conflict');
+                    pickEl.innerText = `指名: ${r.pick}`; pickEl.style.display = 'block';
+                    
+                    await sleep(3000);
+
+                    title.innerText = "抽選（ルーレット）を行います...";
+                    nameEl.innerText = ""; pickEl.style.display = 'none';
+                    rouletteEl.style.display = 'block';
+
+                    let delay = 50; let currentIdx = 0; const pList = r.players;
+                    for(let i=0; i<30; i++) { rouletteEl.innerText = pList[currentIdx].name; sndTick(); await sleep(delay); delay += i * 1.5; currentIdx = (currentIdx + 1) % pList.length; }
+                    
+                    sndWin();
+                    rouletteEl.innerHTML = `<span style="color:var(--success)">交渉権獲得：${r.winnerName} 監督!!</span>`;
+                    await sleep(4000);
+                }
+            }
+            renderFinalResults(data.results, data.allDone);
+        });
+
+        function renderFinalResults(results, allDone) {
+            document.getElementById('result-round-num').innerText = currentRound;
+            if (isBgmPlaying) bgmAudio.play().catch(e => {}); // BGM再開
+
+            showScreen('step-result');
+            const l = document.getElementById('result-list'); l.innerHTML = '';
+            
+            results.forEach(r => {
+                const li = document.createElement('li'); li.className = 'result-item ' + (r.status==='success' ? 'result-success' : 'result-lost');
+                li.innerHTML = `<strong>${r.playerName}</strong>: <span style="font-size:1.2em; font-weight:bold;">${r.pick}</span> ${r.isDuplicate ? '<span style="color:#fbbf24; margin-left:10px;">[競合]</span>' : ''}`;
+                l.appendChild(li);
+            });
+
+            if (isHost) {
+                document.getElementById('btn-re-nominate').style.display = allDone ? 'none' : 'block';
+                document.getElementById('btn-next-round').style.display = (allDone && currentRound < maxRounds) ? 'block' : 'none';
+                document.getElementById('btn-show-final').style.display = (allDone && currentRound >= maxRounds) ? 'block' : 'none';
+            }
+        }
+
+        document.getElementById('btn-next-round').onclick = () => { currentRound++; document.getElementById('round-num-text').innerText = currentRound; socket.emit('startRound', myRoomId, currentRound, 60, false); };
+        
+        document.getElementById('btn-show-final').onclick = () => { socket.emit('requestFinalResults', myRoomId); };
+        socket.on('finalSummary', log => {
+            showScreen('step-final'); const namesDiv = document.getElementById('final-names'); namesDiv.innerHTML = '';
+            for (let name in log) { const n = document.createElement('div'); n.innerText = name; n.onclick = () => { const det = document.getElementById('final-details'); det.innerHTML = `<h3 style="color:var(--primary);">${name} 監督の指名一覧</h3>`; log[name].forEach((p, i) => { det.innerHTML += `<div class="history-item"><strong style="color:#94a3b8;">${i+1}巡目:</strong> <span style="font-size:1.2em;">${p}</span></div>`; }); }; namesDiv.appendChild(n); }
+        });
     </script>
 </body>
 </html>
