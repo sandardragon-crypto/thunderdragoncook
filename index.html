@@ -19,7 +19,6 @@
         button:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
         button:disabled { background-color: #475569 !important; cursor: not-allowed; color: #94a3b8 !important; transform: none; box-shadow: none; }
         
-        /* 退出ボタン用 */
         .btn-leave { background-color: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; font-size: 0.9em; box-shadow: none; margin-top: 30px; }
         .btn-leave:hover { background-color: rgba(244, 63, 94, 0.1); color: var(--accent); }
 
@@ -76,7 +75,6 @@
         .theme-list a { color: var(--text); text-decoration: none; display: block; padding: 10px; background: #0f172a; border-radius: 6px; border: 1px solid #334155; transition: 0.2s;}
         .theme-list a:hover { background: var(--primary); border-color: var(--primary); }
 
-        /* 利用規約フッター */
         .footer { margin-top: 40px; padding: 20px 0; font-size: 0.8em; color: #64748b; }
         .footer a { color: #94a3b8; text-decoration: none; margin: 0 10px; cursor: pointer; transition: color 0.2s; }
         .footer a:hover { color: var(--primary); text-decoration: underline; }
@@ -215,9 +213,16 @@
         <div id="host-settings" class="host-only">
             <h3 style="color:#fbbf24;">★司会者メニュー</h3>
             
-            <div style="display: flex; justify-content: center; align-items: center;">
+            <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 10px;">
                 <input type="text" id="input-theme" placeholder="テーマ (例: 最強の構成)" style="width: 70%;">
                 <button onclick="openModal('theme-hint-modal')" style="background:transparent; border:none; font-size:1.8em; box-shadow:none; padding:5px; margin:0; width:auto;">💡</button>
+            </div>
+            
+            <div style="margin-bottom: 15px; padding: 10px; background-color: rgba(0,0,0,0.3); border-radius: 8px;">
+                <label style="color: var(--success); font-weight: bold; cursor: pointer;">
+                    <input type="checkbox" id="check-text-only" style="width:auto; margin:0;"> 🔤 手書きOFF（文字入力のみにする）
+                </label>
+                <p style="font-size: 0.8em; color: var(--gray); margin-top: 5px; margin-bottom: 0;">※配信等でセンシティブな絵を防ぐための安全モードです</p>
             </div>
 
             <p>巡数: <select id="select-rounds">
@@ -231,16 +236,26 @@
     </div>
 
     <div id="step-drafting" class="screen">
-        <h2 id="display-theme" style="color: var(--primary);"></h2>
+        <h2 id="display-theme" style="color: var(--primary); margin-bottom: 5px;"></h2>
+        <h3 style="color: var(--accent); margin-top: 0; margin-bottom: 20px;"><span id="round-counter-display"></span></h3>
+        
         <div id="host-round-controls" class="host-only">
-            <button id="btn-start-round" style="background-color: #fbbf24; color: #000;"><span id="round-num-text">1</span>巡目指名を開始 (60秒)</button>
+            <button id="btn-start-round" style="background-color: #fbbf24; color: #000;">指名を開始 (60秒)</button>
         </div>
         
         <div id="timerDisplay" style="display:none">60</div>
         
         <div id="pick-area" style="display:none">
-            <canvas id="whiteboard" width="500" height="200"></canvas><br>
-            <button id="btn-clear-canvas" style="background-color: var(--gray); padding: 10px 20px;">書き直す</button>
+            <div id="canvas-container">
+                <canvas id="whiteboard" width="500" height="200"></canvas><br>
+                <button id="btn-clear-canvas" style="background-color: var(--gray); padding: 10px 20px;">書き直す</button>
+            </div>
+            
+            <div id="text-input-container" style="display:none; margin: 20px 0;">
+                <p style="color: var(--gray); font-size: 0.9em;">※文字入力モード（直接入力してください）</p>
+                <input type="text" id="text-pick-input" placeholder="欲しい選手・項目を入力" style="width: 80%; font-size: 1.5em; padding: 15px; text-align: center;">
+            </div>
+
             <button id="btn-submit-early" style="background-color: var(--success);">決定（提出する）</button>
         </div>
         
@@ -290,14 +305,36 @@
     <div id="step-final" class="screen">
         <h2>ドラフト最終結果<br><span style="font-size:0.6em; color:var(--accent);">テーマ: <span id="final-theme-text"></span></span></h2>
         
-        <div style="margin: 20px auto; min-height: 250px; display: flex; justify-content: center; align-items: center; background-color: rgba(0,0,0,0.2); border-radius: 8px;">
-            </div>
+        <div id="vote-area" style="margin-bottom: 20px; padding: 20px; background: #0f172a; border-radius: 8px; border: 2px solid #fbbf24; display: none;">
+            <h3 style="margin-top: 0; color: #fbbf24; font-size: 1.3em;">👍 一番センスが良いと思ったチームは？</h3>
+            <p style="font-size: 0.9em; color: #cbd5e1;">※投票は任意です。半数以上の人が投票するとMVTが発表されます！</p>
+            <select id="select-vote" style="width: 70%; margin-right: 10px; margin-bottom: 15px;"></select>
+            <br>
+            <button id="btn-submit-vote" style="padding: 10px 20px; font-size: 1em; background-color: var(--primary);">投票する</button>
+        </div>
+
+        <div id="host-mvt-area" class="host-only" style="margin-bottom: 20px;">
+            <button id="btn-show-mvt" style="background-color: var(--accent); display:none; width: 100%;">👑 MVT（ベストチーム）を発表する！</button>
+        </div>
 
         <div class="summary-container">
             <div id="final-names" class="summary-names"></div>
             <div id="final-details" class="summary-details"></div>
         </div>
-        <button onclick="leaveRoomAndGoHome()" style="background-color:var(--gray); margin-top:30px;">◀ トップ(ホーム)に戻る</button>
+
+        <div style="margin: 20px auto; min-height: 250px; display: flex; justify-content: center; align-items: center; background-color: rgba(0,0,0,0.2); border-radius: 8px;">
+            </div>
+
+        <button onclick="leaveRoomAndGoHome()" style="background-color:var(--gray); margin-top:30px;">◀ 退出してトップに戻る</button>
+    </div>
+
+    <div id="step-mvt" class="screen">
+        <div id="mvt-container" style="min-height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <div class="reveal-title" style="color: #fbbf24; font-size: 2em; text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);">👑 MVT (Most Valuable Team) 👑</div>
+            <div id="mvt-roulette" class="roulette-box" style="display:block;"></div>
+            <div id="mvt-winner" class="reveal-name" style="display:none; color: var(--success); font-size: 3.5em; text-shadow: 0 0 20px var(--success);"></div>
+        </div>
+        <button onclick="showScreen('step-final')" style="background-color:var(--gray); margin-top:30px; display:none;" id="btn-back-to-final">◀ 最終結果に戻る</button>
     </div>
 
     <div class="footer">
@@ -311,8 +348,8 @@
         const socket = io();
         let isHost = false, currentRound = 1, maxRounds = 1, myName = "", myRoomId = "", isMyTurn = true;
         let timerInterval;
+        let isTextOnlyMode = false; // ★追加：テキストモードフラグ
 
-        // ★起動時にQR生成とBGM音量(15%)設定
         window.onload = () => {
             const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(window.location.href);
             document.getElementById('qr-img').src = qrUrl;
@@ -321,7 +358,6 @@
             document.getElementById('bgm-audio').volume = 0.15;
         };
 
-        // UI制御関数
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function setTheme(theme) { document.getElementById('input-theme').value = theme; document.getElementById('btn-start-meeting').disabled = false; closeModal('theme-hint-modal'); }
@@ -329,7 +365,6 @@
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
         const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-        // BGM制御
         const bgmAudio = document.getElementById('bgm-audio');
         const btnBgm = document.getElementById('btn-bgm');
         let isBgmPlaying = true; 
@@ -340,7 +375,6 @@
         });
         function stopBGM() { bgmAudio.pause(); isBgmPlaying = false; btnBgm.innerText = "🎵 BGM: OFF"; btnBgm.style.backgroundColor = "#8b5cf6"; }
 
-        // Web Audio API（効果音）
         let audioCtx;
         function initAudio() { try { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if(audioCtx.state === 'suspended') audioCtx.resume(); } catch(e) {} }
         function playTone(freq, type, duration, vol=0.1) { if(!audioCtx) return; try { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime); gain.gain.setValueAtTime(vol, audioCtx.currentTime); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration); } catch(e) {} }
@@ -351,12 +385,9 @@
         function playClickSnd() { playTone(1200, 'sine', 0.05, 0.03); }
 
         document.addEventListener('click', (e) => {
-            if(e.target.tagName === 'BUTTON' && e.target.id !== 'btn-ooh' && e.target.id !== 'btn-bgm') {
-                if(audioCtx) playClickSnd();
-            }
+            if(e.target.tagName === 'BUTTON' && e.target.id !== 'btn-ooh' && e.target.id !== 'btn-bgm') { if(audioCtx) playClickSnd(); }
         });
 
-        // おぉ〜ボタン
         const btnOoh = document.getElementById('btn-ooh');
         btnOoh.addEventListener('click', function() {
             if (!myRoomId) return; socket.emit('sendOoh', myRoomId);
@@ -376,7 +407,6 @@
             openModal('history-modal');
         });
 
-        // お絵かきキャンバス制御（スマホズレ対策済み）
         const canvas = document.getElementById('whiteboard'); const ctx = canvas.getContext('2d'); let isDrawing = false;
         ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.strokeStyle = '#000';
         function getCoords(e) { const rect = canvas.getBoundingClientRect(); const scaleX = canvas.width / rect.width; const scaleY = canvas.height / rect.height; let clientX = e.clientX; let clientY = e.clientY; if (e.touches && e.touches.length > 0) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; } return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY }; }
@@ -388,7 +418,6 @@
         document.getElementById('btn-clear-canvas').onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
         function getCanvasData() { return canvas.toDataURL('image/png'); }
 
-        // 入室ロジック
         document.getElementById('btn-submit-pass').onclick = () => { initAudio(); myRoomId = document.getElementById('input-password').value.trim(); if(myRoomId) { document.getElementById('pass-error').innerText = ""; socket.emit('joinRoomRequest', myRoomId); } else { document.getElementById('pass-error').innerText = "合言葉を入力してください！"; } };
         socket.on('roomJoinedOk', () => { document.getElementById('pass-error').innerText = ""; showScreen('step-name'); });
         socket.on('roomError', m => { alert(m); document.getElementById('pass-error').innerText = m; });
@@ -405,11 +434,13 @@
             bgmAudio.play().catch(e => { isBgmPlaying = false; btnBgm.innerText = "🎵 BGM: OFF"; btnBgm.style.backgroundColor = "#8b5cf6"; });
         });
 
-        // プレイヤー更新とキック機能
+        // ★UI追加②：司会者に★マークをつける処理
         socket.on('updatePlayers', ps => { 
             currentPlayers = ps; const l = document.getElementById('players-list'); l.innerHTML = ''; 
             ps.forEach(p => { 
-                const li = document.createElement('li'); li.innerText = p.name; 
+                const li = document.createElement('li'); 
+                li.innerHTML = (p.isHost ? '<span style="color:#fbbf24">★</span> ' : '') + p.name;
+                
                 if (isHost && p.id !== socket.id) {
                     const btnKick = document.createElement('button'); btnKick.innerText = '✖'; btnKick.style.padding = '2px 8px'; btnKick.style.marginLeft = '10px'; btnKick.style.fontSize = '0.7em'; btnKick.style.backgroundColor = 'var(--accent)';
                     btnKick.onclick = () => { if(confirm(`${p.name} を退室させますか？\n（エラーで残ってしまったゴースト用）`)) socket.emit('kickPlayer', myRoomId, p.id); };
@@ -422,11 +453,22 @@
         socket.on('youAreHost', () => { isHost = true; document.querySelectorAll('.host-only').forEach(e => e.style.display = 'block'); document.getElementById('role-msg').innerHTML = "あなたは<span style='color:#fbbf24'>司会者(ホスト)</span>です！"; });
         socket.on('youAreNotHost', () => { isHost = false; document.querySelectorAll('.host-only').forEach(e => e.style.display = 'none'); });
 
+        // ★追加：手書きOFFのチェックを送信
         document.getElementById('input-theme').oninput = e => document.getElementById('btn-start-meeting').disabled = !e.target.value;
-        document.getElementById('btn-start-meeting').onclick = () => { socket.emit('startMeeting', myRoomId, { theme: document.getElementById('input-theme').value, rounds: document.getElementById('select-rounds').value }); };
+        document.getElementById('btn-start-meeting').onclick = () => { 
+            socket.emit('startMeeting', myRoomId, { 
+                theme: document.getElementById('input-theme').value, 
+                rounds: document.getElementById('select-rounds').value,
+                textOnly: document.getElementById('check-text-only').checked
+            }); 
+        };
         
         socket.on('meetingStarted', d => { 
-            maxRounds = parseInt(d.rounds); document.getElementById('display-theme').innerText = "テーマ: " + d.theme; document.getElementById('final-theme-text').innerText = d.theme; document.getElementById('btn-show-history').style.display = 'block'; 
+            maxRounds = parseInt(d.rounds); 
+            isTextOnlyMode = d.textOnly; // ★テキストモードを受信
+            document.getElementById('display-theme').innerText = "テーマ: " + d.theme; 
+            document.getElementById('final-theme-text').innerText = d.theme; 
+            document.getElementById('btn-show-history').style.display = 'block'; 
             showScreen('step-drafting'); 
         });
 
@@ -436,23 +478,73 @@
         socket.on('startTimer', d => {
             showScreen('step-drafting'); document.getElementById('host-round-controls').style.display = 'none'; const t = document.getElementById('timerDisplay'); t.style.display = 'block';
             
+            // ★UI追加①：現在の巡回数を表示
+            document.getElementById('round-counter-display').innerText = `${d.currentRound} / ${maxRounds} 巡目`;
+
             if (isHost) {
                 const btnForce = document.getElementById('btn-force-judgment');
                 btnForce.disabled = true; btnForce.innerText = "全員の提出を待っています..."; btnForce.style.backgroundColor = "var(--gray)";
             }
 
             isMyTurn = !d.successMembers.includes(socket.id);
-            if (isMyTurn) { document.getElementById('pick-area').style.display = 'block'; document.getElementById('wait-pick-msg').style.display = 'none'; ctx.clearRect(0, 0, canvas.width, canvas.height); } else { document.getElementById('pick-area').style.display = 'none'; document.getElementById('wait-pick-msg').innerText = "あなたは獲得済みです。待機中..."; document.getElementById('wait-pick-msg').style.display = 'block'; }
+            if (isMyTurn) { 
+                document.getElementById('pick-area').style.display = 'block'; 
+                document.getElementById('wait-pick-msg').style.display = 'none'; 
+                
+                // ★追加：テキストモードと手書きモードのUI切り替え
+                if (isTextOnlyMode) {
+                    document.getElementById('canvas-container').style.display = 'none';
+                    document.getElementById('text-input-container').style.display = 'block';
+                    document.getElementById('text-pick-input').value = '';
+                } else {
+                    document.getElementById('canvas-container').style.display = 'block';
+                    document.getElementById('text-input-container').style.display = 'none';
+                    ctx.clearRect(0, 0, canvas.width, canvas.height); 
+                }
+
+            } else { 
+                document.getElementById('pick-area').style.display = 'none'; 
+                document.getElementById('wait-pick-msg').innerText = "あなたは獲得済みです。待機中..."; 
+                document.getElementById('wait-pick-msg').style.display = 'block'; 
+            }
+            
             if (isHost) { document.getElementById('host-status-area').style.display = 'block'; const sCont = document.getElementById('status-container'); sCont.innerHTML = ''; currentPlayers.forEach(p => { if(!d.successMembers.includes(p.id)) { sCont.innerHTML += `<div class="status-item" id="status-${p.id}"><span class="status-dot"></span>${p.name}</div>`; } }); }
             let left = d.seconds; t.innerText = left; if(timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(() => { left--; t.innerText = left; if(left <= 0) { clearInterval(timerInterval); t.style.display = 'none'; if (isMyTurn) forceSubmitPick(); } }, 1000);
         });
 
         document.getElementById('btn-submit-early').onclick = () => { forceSubmitPick(); };
-        function forceSubmitPick() { if(!isMyTurn) return; isMyTurn = false; document.getElementById('pick-area').style.display = 'none'; document.getElementById('wait-pick-msg').innerText = "提出完了！全員の提出を待っています..."; document.getElementById('wait-pick-msg').style.display = 'block'; socket.emit('submitPickEarly', myRoomId, getCanvasData()); }
+
+        // ★追加：提出時に、テキストモードなら裏側で画像に変換して送る
+        function forceSubmitPick() { 
+            if(!isMyTurn) return; 
+            isMyTurn = false; 
+            document.getElementById('pick-area').style.display = 'none'; 
+            document.getElementById('wait-pick-msg').innerText = "提出完了！全員の提出を待っています..."; 
+            document.getElementById('wait-pick-msg').style.display = 'block'; 
+            
+            let finalImageData = "";
+            if (isTextOnlyMode) {
+                const textVal = document.getElementById('text-pick-input').value.trim() || "未入力";
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = 500; tempCanvas.height = 200;
+                const tCtx = tempCanvas.getContext('2d');
+                tCtx.fillStyle = "white"; tCtx.fillRect(0, 0, 500, 200);
+                tCtx.fillStyle = "black";
+                tCtx.font = "bold 40px sans-serif";
+                tCtx.textAlign = "center";
+                tCtx.textBaseline = "middle";
+                tCtx.fillText(textVal, 250, 100);
+                finalImageData = tempCanvas.toDataURL('image/png');
+            } else {
+                finalImageData = getCanvasData();
+            }
+
+            socket.emit('submitPickEarly', myRoomId, finalImageData); 
+        }
+
         socket.on('playerSubmitted', (playerId) => { if(!isHost) return; const item = document.getElementById(`status-${playerId}`); if(item) item.querySelector('.status-dot').classList.add('done'); });
         
-        // ★全員提出完了で手動進行ボタン解禁
         socket.on('allPlayersSubmitted', () => {
             if (isHost) {
                 const btnForce = document.getElementById('btn-force-judgment');
@@ -462,7 +554,6 @@
         
         document.getElementById('btn-force-judgment').onclick = () => { clearInterval(timerInterval); document.getElementById('timerDisplay').style.display = 'none'; socket.emit('forceJudgment', myRoomId); };
 
-        // ★未入力ボタン機能
         window.setUnsubmitted = function(id) {
             const input = document.querySelector(`.judge-input[data-id="${id}"]`);
             if (input) input.value = "未入力";
@@ -472,7 +563,7 @@
             document.getElementById('host-status-area').style.display = 'none';
             showScreen('step-reveal');
             
-            if (isBgmPlaying) bgmAudio.pause(); // 発表時BGMストップ
+            if (isBgmPlaying) bgmAudio.pause();
 
             const title = document.getElementById('rev-title'); const nameEl = document.getElementById('rev-name'); 
             const imgEl = document.getElementById('rev-image'); const pickEl = document.getElementById('rev-pick-text');
@@ -558,7 +649,7 @@
 
         function renderFinalResults(results, allDone) {
             document.getElementById('result-round-num').innerText = currentRound;
-            if (isBgmPlaying) bgmAudio.play().catch(e => {}); // BGM再開
+            if (isBgmPlaying) bgmAudio.play().catch(e => {});
 
             showScreen('step-result');
             const l = document.getElementById('result-list'); l.innerHTML = '';
@@ -579,10 +670,56 @@
         document.getElementById('btn-next-round').onclick = () => { currentRound++; document.getElementById('round-num-text').innerText = currentRound; socket.emit('startRound', myRoomId, currentRound, 60, false); };
         
         document.getElementById('btn-show-final').onclick = () => { socket.emit('requestFinalResults', myRoomId); };
+        
         socket.on('finalSummary', log => {
             showScreen('step-final'); const namesDiv = document.getElementById('final-names'); namesDiv.innerHTML = '';
             for (let name in log) { const n = document.createElement('div'); n.innerText = name; n.onclick = () => { const det = document.getElementById('final-details'); det.innerHTML = `<h3 style="color:var(--primary);">${name} 監督の指名一覧</h3>`; log[name].forEach((p, i) => { det.innerHTML += `<div class="history-item"><strong style="color:#94a3b8;">${i+1}巡目:</strong> <span style="font-size:1.2em;">${p}</span></div>`; }); }; namesDiv.appendChild(n); }
+            
+            const voteSelect = document.getElementById('select-vote');
+            voteSelect.innerHTML = '<option value="">-- センスの塊を選ぶ --</option>';
+            for (let name in log) {
+                if (name !== myName) {
+                    voteSelect.innerHTML += `<option value="${name}">${name} 監督</option>`;
+                }
+            }
+            document.getElementById('vote-area').style.display = 'block';
+            document.getElementById('btn-submit-vote').disabled = false;
+            document.getElementById('btn-submit-vote').innerText = "投票する";
+            document.getElementById('btn-show-mvt').style.display = 'none'; 
         });
+
+        document.getElementById('btn-submit-vote').onclick = () => {
+            const targetName = document.getElementById('select-vote').value;
+            if (!targetName) { alert("投票先を選んでください！"); return; }
+            socket.emit('submitVote', myRoomId, targetName);
+            document.getElementById('btn-submit-vote').disabled = true;
+            document.getElementById('btn-submit-vote').innerText = "投票完了！";
+        };
+
+        socket.on('mvtReady', () => {
+            if (isHost) { document.getElementById('btn-show-mvt').style.display = 'block'; }
+        });
+
+        document.getElementById('btn-show-mvt').onclick = () => { socket.emit('triggerMVT', myRoomId); };
+
+        socket.on('showMVTRoulette', async (data) => {
+            showScreen('step-mvt');
+            const rouletteEl = document.getElementById('mvt-roulette');
+            const winnerEl = document.getElementById('mvt-winner');
+            const btnBack = document.getElementById('btn-back-to-final');
+            
+            rouletteEl.style.display = 'block'; winnerEl.style.display = 'none'; btnBack.style.display = 'none';
+
+            let delay = 50; let currentIdx = 0; const pList = data.players;
+            for(let i=0; i<30; i++) { rouletteEl.innerText = pList[currentIdx].name; sndTick(); await sleep(delay); delay += i * 1.5; currentIdx = (currentIdx + 1) % pList.length; }
+            
+            sndWin();
+            rouletteEl.style.display = 'none';
+            winnerEl.innerHTML = `<span style="color:#fff; font-size:0.5em;">選ばれたのは...</span><br>${data.winner} 監督!!`;
+            winnerEl.style.display = 'block';
+            btnBack.style.display = 'inline-block';
+        });
+
     </script>
 </body>
 </html>
