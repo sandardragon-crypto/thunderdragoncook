@@ -505,20 +505,14 @@
             
             if (isHost) { document.getElementById('host-status-area').style.display = 'block'; const sCont = document.getElementById('status-container'); sCont.innerHTML = ''; currentPlayers.forEach(p => { if(!d.successMembers.includes(p.id)) { sCont.innerHTML += `<div class="status-item" id="status-${p.id}"><span class="status-dot"></span>${p.name}</div>`; } }); }
             let left = d.seconds; t.innerText = left; if(timerInterval) clearInterval(timerInterval);
+            
+            // ★バグの元だった強制解除コードを削除し、純粋なタイマーのみに修正
             timerInterval = setInterval(() => { 
                 left--; t.innerText = left; 
                 if (left <= 0) { 
                     clearInterval(timerInterval); 
                     t.style.display = 'none'; 
                     if (isMyTurn) forceSubmitPick(); 
-                    
-                    // ★今回のバグ修正：タイマーが0になったら、絶対に強制進行ボタンを解禁する！
-                    if (isHost) {
-                        const btnForce = document.getElementById('btn-force-judgment');
-                        btnForce.disabled = false;
-                        btnForce.innerText = "時間切れ（強制的に公開へ進む）";
-                        btnForce.style.backgroundColor = "var(--accent)";
-                    }
                 } 
             }, 1000);
         });
