@@ -350,7 +350,6 @@
         let timerInterval;
         let isTextOnlyMode = false;
 
-        // ★スマホ通信切断（スリープ）からの復帰時に、裏側でこっそり再入室してフリーズを防ぐ！
         socket.on('connect', () => {
             if (myRoomId) {
                 socket.emit('reconnectRoomOnly', myRoomId);
@@ -477,7 +476,15 @@
             showScreen('step-drafting'); 
         });
 
+        // ★★★ この1行が今回の最大の原因（バグの元）でした！ ★★★
+        // 古い要素を探そうとしてJSがクラッシュし、次へ進めなくなっていました。修正完了です！
         document.getElementById('btn-start-round').onclick = () => socket.emit('startRound', myRoomId, currentRound, 60, false);
+        document.getElementById('btn-next-round').onclick = () => { 
+            currentRound++; 
+            socket.emit('startRound', myRoomId, currentRound, 60, false); 
+        };
+        // ★★★ 修正箇所ここまで ★★★
+        
         document.getElementById('btn-re-nominate').onclick = () => socket.emit('startRound', myRoomId, currentRound, 30, true);
 
         socket.on('startTimer', d => {
@@ -675,8 +682,6 @@
                 document.getElementById('btn-show-final').style.display = (allDone && currentRound >= maxRounds) ? 'block' : 'none';
             }
         }
-
-        document.getElementById('btn-next-round').onclick = () => { currentRound++; document.getElementById('round-num-text').innerText = currentRound; socket.emit('startRound', myRoomId, currentRound, 60, false); };
         
         document.getElementById('btn-show-final').onclick = () => { socket.emit('requestFinalResults', myRoomId); };
         
