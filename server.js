@@ -42,14 +42,14 @@ function handlePlayerLeave(socket) {
     if (room.players.length === 0) { delete rooms[targetRoomId]; return; }
     if (room.hostId === socket.id) { room.hostId = room.players[0].id; io.to(room.hostId).emit('youAreHost'); }
     
-    // ★UI追加②: 司会者にフラグをつけて送る
     io.to(targetRoomId).emit('updatePlayers', room.players.map(p => ({ id: p.id, name: p.name, isHost: p.id === room.hostId })));
 
     if (room.phase === 'drafting') {
         const expectedCount = room.players.filter(p => !room.roundSuccessMembers.has(p.id)).length;
         const submittedCount = Object.keys(room.currentPicks).filter(id => room.players.find(p => p.id === id)).length;
 
-        if (expectedCount > 0 && submittedCount >= expectedCount) {
+        // ★修正: 抜けた結果、待つべき人が0人になった場合もボタンを解禁する
+        if (expectedCount === 0 || (expectedCount > 0 && submittedCount >= expectedCount)) {
             io.to(targetRoomId).emit('allPlayersSubmitted');
         }
     }
@@ -134,7 +134,7 @@ io.on('connection', (socket) => {
         if (room.phase === 'drafting') {
             const expectedCount = room.players.filter(p => !room.roundSuccessMembers.has(p.id)).length;
             const submittedCount = Object.keys(room.currentPicks).length;
-            if (submittedCount >= expectedCount) { io.to(roomId).emit('allPlayersSubmitted'); }
+            if (expectedCount === 0 || submittedCount >= expectedCount) { io.to(roomId).emit('allPlayersSubmitted'); }
         }
     });
 
