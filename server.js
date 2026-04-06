@@ -48,7 +48,6 @@ function handlePlayerLeave(socket) {
         const expectedCount = room.players.filter(p => !room.roundSuccessMembers.has(p.id)).length;
         const submittedCount = Object.keys(room.currentPicks).filter(id => room.players.find(p => p.id === id)).length;
 
-        // ★修正: 抜けた結果、待つべき人が0人になった場合もボタンを解禁する
         if (expectedCount === 0 || (expectedCount > 0 && submittedCount >= expectedCount)) {
             io.to(targetRoomId).emit('allPlayersSubmitted');
         }
@@ -122,8 +121,23 @@ io.on('connection', (socket) => {
 
     socket.on('startRound', (roomId, roundNumber, seconds, isRenomination = false) => {
         const room = rooms[roomId]; if (!room) return;
+        
+        // ★真のバグ修正：再指名すべき人がすでに全員退出していた場合、ファントムラウンドをスキップする
+        if (isRenomination) {
+            const expectedCount = room.players.filter(p => !room.roundSuccessMembers.has(p.id)).length;
+            if (expectedCount === 0) {
+                const fullResultsArray = Object.values(room.roundResultsList); 
+                io.to(roomId).emit('showRoundResults', { roulettes: [], results: fullResultsArray, allDone: true });
+                return; // ここで止めて、画面を即座に「次の巡へ進む」状態にする
+            }
+            room.renominationCount++;
+        } else {
+            room.roundSuccessMembers.clear(); 
+            room.roundResultsList = {}; 
+            room.renominationCount = 0; 
+        }
+        
         room.phase = 'drafting'; room.currentPicks = {}; 
-        if (!isRenomination) { room.roundSuccessMembers.clear(); room.roundResultsList = {}; room.renominationCount = 0; } else { room.renominationCount++; }
         io.to(roomId).emit('startTimer', { seconds: seconds, currentRound: roundNumber, successMembers: Array.from(room.roundSuccessMembers) });
     });
 
@@ -134,7 +148,7 @@ io.on('connection', (socket) => {
         if (room.phase === 'drafting') {
             const expectedCount = room.players.filter(p => !room.roundSuccessMembers.has(p.id)).length;
             const submittedCount = Object.keys(room.currentPicks).length;
-            if (expectedCount === 0 || submittedCount >= expectedCount) { io.to(roomId).emit('allPlayersSubmitted'); }
+            if (submittedCount >= expectedCount) { io.to(roomId).emit('allPlayersSubmitted'); }
         }
     });
 
