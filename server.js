@@ -48,7 +48,7 @@ function handlePlayerLeave(socket) {
         const expectedCount = room.players.filter(p => !room.roundSuccessMembers.has(p.id)).length;
         const submittedCount = Object.keys(room.currentPicks).filter(id => room.players.find(p => p.id === id)).length;
 
-        if (expectedCount === 0 || (expectedCount > 0 && submittedCount >= expectedCount)) {
+        if (expectedCount > 0 && submittedCount >= expectedCount) {
             io.to(targetRoomId).emit('allPlayersSubmitted');
         }
     }
@@ -56,6 +56,11 @@ function handlePlayerLeave(socket) {
 }
 
 io.on('connection', (socket) => {
+    // ★今回のバグ修正：スマホのスリープ復帰時に、裏側でこっそり部屋に入り直す（画面フリーズ対策）
+    socket.on('reconnectRoomOnly', (roomId) => {
+        socket.join(roomId);
+    });
+
     socket.on('joinRoomRequest', (password) => {
         if (!rooms[password]) { 
             rooms[password] = { 
@@ -119,25 +124,19 @@ io.on('connection', (socket) => {
         io.to(roomId).emit('meetingStarted', { players: room.players, theme: room.theme, rounds: room.maxRounds, textOnly: room.textOnly });
     });
 
+    // ★前回追加した余計なコードを全消去し、一番安定していた元のコードに完全に戻しました
     socket.on('startRound', (roomId, roundNumber, seconds, isRenomination = false) => {
         const room = rooms[roomId]; if (!room) return;
+        room.phase = 'drafting'; room.currentPicks = {}; 
         
-        // ★真のバグ修正：再指名すべき人がすでに全員退出していた場合、ファントムラウンドをスキップする
-        if (isRenomination) {
-            const expectedCount = room.players.filter(p => !room.roundSuccessMembers.has(p.id)).length;
-            if (expectedCount === 0) {
-                const fullResultsArray = Object.values(room.roundResultsList); 
-                io.to(roomId).emit('showRoundResults', { roulettes: [], results: fullResultsArray, allDone: true });
-                return; // ここで止めて、画面を即座に「次の巡へ進む」状態にする
-            }
-            room.renominationCount++;
-        } else {
+        if (!isRenomination) { 
             room.roundSuccessMembers.clear(); 
             room.roundResultsList = {}; 
             room.renominationCount = 0; 
+        } else { 
+            room.renominationCount++; 
         }
         
-        room.phase = 'drafting'; room.currentPicks = {}; 
         io.to(roomId).emit('startTimer', { seconds: seconds, currentRound: roundNumber, successMembers: Array.from(room.roundSuccessMembers) });
     });
 
