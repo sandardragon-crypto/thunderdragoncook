@@ -14,6 +14,17 @@ app.get('/', (req, res) => {
 
 const rooms = {}; 
 
+function checkMvtStatus(roomId) {
+    const room = rooms[roomId];
+    if (!room) return;
+    const voteCount = Object.keys(room.votes).length;
+    const requiredVotes = Math.ceil(room.players.length / 2);
+    
+    if (voteCount >= requiredVotes && voteCount > 0) {
+        io.to(roomId).emit('mvtReady');
+    }
+}
+
 function handlePlayerLeave(socket) {
     let targetRoomId = null;
     for (const roomId in rooms) {
@@ -26,20 +37,23 @@ function handlePlayerLeave(socket) {
     room.roundSuccessMembers.delete(socket.id);
     delete room.currentPicks[socket.id];
     delete room.roundResultsList[socket.id];
+    if (room.votes[socket.id]) { delete room.votes[socket.id]; }
 
     if (room.players.length === 0) { delete rooms[targetRoomId]; return; }
     if (room.hostId === socket.id) { room.hostId = room.players[0].id; io.to(room.hostId).emit('youAreHost'); }
-    io.to(targetRoomId).emit('updatePlayers', room.players);
+    
+    // ★UI追加②: 司会者にフラグをつけて送る
+    io.to(targetRoomId).emit('updatePlayers', room.players.map(p => ({ id: p.id, name: p.name, isHost: p.id === room.hostId })));
 
     if (room.phase === 'drafting') {
         const expectedCount = room.players.filter(p => !room.roundSuccessMembers.has(p.id)).length;
         const submittedCount = Object.keys(room.currentPicks).filter(id => room.players.find(p => p.id === id)).length;
 
         if (expectedCount > 0 && submittedCount >= expectedCount) {
-            // ★全員提出完了の合図（勝手に飛ばさず手動ボタンを解禁させる）
             io.to(targetRoomId).emit('allPlayersSubmitted');
         }
     }
+    checkMvtStatus(targetRoomId);
 }
 
 io.on('connection', (socket) => {
@@ -49,8 +63,7 @@ io.on('connection', (socket) => {
                 hostId: socket.id, players: [], finalDraftLog: {}, 
                 roundSuccessMembers: new Set(), currentPicks: {}, 
                 roundResultsList: {}, theme: "", maxRounds: 1,
-                phase: 'waiting',
-                renominationCount: 0 
+                phase: 'waiting', renominationCount: 0, votes: {}, textOnly: false
             }; 
         }
         socket.join(password);
@@ -75,7 +88,7 @@ io.on('connection', (socket) => {
         room.players.push({ id: socket.id, name: finalName });
         if (!room.finalDraftLog[finalName]) room.finalDraftLog[finalName] = [];
         
-        io.to(roomId).emit('updatePlayers', room.players);
+        io.to(roomId).emit('updatePlayers', room.players.map(p => ({ id: p.id, name: p.name, isHost: p.id === room.hostId })));
         socket.emit('nameAssigned', finalName); 
 
         if (socket.id === room.hostId) socket.emit('youAreHost'); else socket.emit('youAreNotHost');
@@ -84,7 +97,6 @@ io.on('connection', (socket) => {
     socket.on('leaveRoom', () => { handlePlayerLeave(socket); for (const room of socket.rooms) { if (room !== socket.id) socket.leave(room); } });
     socket.on('disconnect', () => { handlePlayerLeave(socket); });
 
-    // ★司会者によるキック機能
     socket.on('kickPlayer', (roomId, targetId) => {
         const room = rooms[roomId]; if (!room) return;
         if (socket.id !== room.hostId) return; 
@@ -94,29 +106,24 @@ io.on('connection', (socket) => {
         else {
             room.players = room.players.filter(p => p.id !== targetId);
             room.roundSuccessMembers.delete(targetId);
-            io.to(roomId).emit('updatePlayers', room.players);
+            if (room.votes[targetId]) delete room.votes[targetId];
+            io.to(roomId).emit('updatePlayers', room.players.map(p => ({ id: p.id, name: p.name, isHost: p.id === room.hostId })));
+            checkMvtStatus(roomId);
         }
     });
 
     socket.on('startMeeting', (roomId, settings) => {
         const room = rooms[roomId]; if (!room) return;
-        room.theme = settings.theme; room.maxRounds = settings.rounds;
+        room.theme = settings.theme; room.maxRounds = settings.rounds; room.textOnly = settings.textOnly;
+        room.votes = {};
         room.players.sort(() => Math.random() - 0.5);
-        io.to(roomId).emit('meetingStarted', { players: room.players, theme: room.theme, rounds: room.maxRounds });
+        io.to(roomId).emit('meetingStarted', { players: room.players, theme: room.theme, rounds: room.maxRounds, textOnly: room.textOnly });
     });
 
     socket.on('startRound', (roomId, roundNumber, seconds, isRenomination = false) => {
         const room = rooms[roomId]; if (!room) return;
-        room.phase = 'drafting'; 
-        room.currentPicks = {}; 
-        
-        if (!isRenomination) {
-            room.roundSuccessMembers.clear();
-            room.roundResultsList = {}; 
-            room.renominationCount = 0; 
-        } else {
-            room.renominationCount++; 
-        }
+        room.phase = 'drafting'; room.currentPicks = {}; 
+        if (!isRenomination) { room.roundSuccessMembers.clear(); room.roundResultsList = {}; room.renominationCount = 0; } else { room.renominationCount++; }
         io.to(roomId).emit('startTimer', { seconds: seconds, currentRound: roundNumber, successMembers: Array.from(room.roundSuccessMembers) });
     });
 
@@ -124,18 +131,13 @@ io.on('connection', (socket) => {
         const room = rooms[roomId]; if (!room) return;
         room.currentPicks[socket.id] = imageData;
         io.to(roomId).emit('playerSubmitted', socket.id);
-
         if (room.phase === 'drafting') {
             const expectedCount = room.players.filter(p => !room.roundSuccessMembers.has(p.id)).length;
             const submittedCount = Object.keys(room.currentPicks).length;
-            if (submittedCount >= expectedCount) {
-                // ★全員提出完了の合図
-                io.to(roomId).emit('allPlayersSubmitted');
-            }
+            if (submittedCount >= expectedCount) { io.to(roomId).emit('allPlayersSubmitted'); }
         }
     });
 
-    // ★手動進行ボタンが押された時の処理
     socket.on('forceJudgment', (roomId) => {
         const room = rooms[roomId]; if (!room) return;
         if (room.phase === 'drafting') {
@@ -157,8 +159,6 @@ io.on('connection', (socket) => {
 
         activePlayers.forEach(p => {
             let pickText = judgments[p.id] || "未入力";
-            
-            // ★「未入力」の場合は即座に失敗扱い（外れ再指名）に回す
             if (pickText === "未入力") {
                 room.roundResultsList[p.id] = { playerName: p.name, pick: "未入力（時間切れ/エラー）", status: 'lost', isDuplicate: false };
                 room.finalDraftLog[p.name].push("未入力" + statusText);
@@ -180,16 +180,11 @@ io.on('connection', (socket) => {
             } else {
                 let winnerIndex = Math.floor(Math.random() * selectors.length);
                 let winner = selectors[winnerIndex];
-                
                 rouletteSequence.push({ pick: pickText, players: selectors.map(s => ({ name: s.name })), winnerName: winner.name });
-                
                 selectors.forEach((s, index) => {
                     let isWinner = (index === winnerIndex);
                     room.roundResultsList[s.id] = { playerName: s.name, pick: pickText, status: isWinner ? 'success' : 'lost', isDuplicate: true };
-                    if (isWinner) { 
-                        room.roundSuccessMembers.add(s.id); 
-                        room.finalDraftLog[s.name].push(displayPickText); 
-                    }
+                    if (isWinner) { room.roundSuccessMembers.add(s.id); room.finalDraftLog[s.name].push(displayPickText); }
                 });
             }
         }
@@ -199,16 +194,32 @@ io.on('connection', (socket) => {
         io.to(roomId).emit('showRoundResults', { roulettes: rouletteSequence, results: fullResultsArray, allDone: allDone });
     });
 
-    socket.on('requestFinalResults', (roomId) => {
-        if (rooms[roomId]) io.to(roomId).emit('finalSummary', rooms[roomId].finalDraftLog);
+    socket.on('requestFinalResults', (roomId) => { if (rooms[roomId]) io.to(roomId).emit('finalSummary', rooms[roomId].finalDraftLog); });
+    socket.on('requestCurrentHistory', (roomId) => { if (rooms[roomId]) socket.emit('currentHistoryData', rooms[roomId].finalDraftLog); });
+    socket.on('sendOoh', (roomId) => { io.to(roomId).emit('playOohSound'); });
+
+    socket.on('submitVote', (roomId, targetName) => {
+        const room = rooms[roomId]; if (!room) return;
+        room.votes[socket.id] = targetName;
+        checkMvtStatus(roomId);
     });
 
-    socket.on('requestCurrentHistory', (roomId) => {
-        if (rooms[roomId]) socket.emit('currentHistoryData', rooms[roomId].finalDraftLog);
-    });
+    socket.on('triggerMVT', (roomId) => {
+        const room = rooms[roomId]; if (!room) return;
+        let voteCounts = {};
+        for (let vid in room.votes) { let vName = room.votes[vid]; voteCounts[vName] = (voteCounts[vName] || 0) + 1; }
 
-    socket.on('sendOoh', (roomId) => {
-        io.to(roomId).emit('playOohSound');
+        let maxVotes = 0; let winners = [];
+        for (let name in voteCounts) {
+            if (voteCounts[name] > maxVotes) { maxVotes = voteCounts[name]; winners = [name]; } 
+            else if (voteCounts[name] === maxVotes) { winners.push(name); }
+        }
+
+        let finalWinner = "";
+        if (winners.length > 0) { finalWinner = winners[Math.floor(Math.random() * winners.length)]; } 
+        else { finalWinner = room.players[Math.floor(Math.random() * room.players.length)].name; }
+
+        io.to(roomId).emit('showMVTRoulette', { winner: finalWinner, players: room.players });
     });
 });
 
