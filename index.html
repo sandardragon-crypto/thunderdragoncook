@@ -348,7 +348,7 @@
         const socket = io();
         let isHost = false, currentRound = 1, maxRounds = 1, myName = "", myRoomId = "", isMyTurn = true;
         let timerInterval;
-        let isTextOnlyMode = false; // ★追加：テキストモードフラグ
+        let isTextOnlyMode = false;
 
         window.onload = () => {
             const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(window.location.href);
@@ -434,7 +434,6 @@
             bgmAudio.play().catch(e => { isBgmPlaying = false; btnBgm.innerText = "🎵 BGM: OFF"; btnBgm.style.backgroundColor = "#8b5cf6"; });
         });
 
-        // ★UI追加②：司会者に★マークをつける処理
         socket.on('updatePlayers', ps => { 
             currentPlayers = ps; const l = document.getElementById('players-list'); l.innerHTML = ''; 
             ps.forEach(p => { 
@@ -453,7 +452,6 @@
         socket.on('youAreHost', () => { isHost = true; document.querySelectorAll('.host-only').forEach(e => e.style.display = 'block'); document.getElementById('role-msg').innerHTML = "あなたは<span style='color:#fbbf24'>司会者(ホスト)</span>です！"; });
         socket.on('youAreNotHost', () => { isHost = false; document.querySelectorAll('.host-only').forEach(e => e.style.display = 'none'); });
 
-        // ★追加：手書きOFFのチェックを送信
         document.getElementById('input-theme').oninput = e => document.getElementById('btn-start-meeting').disabled = !e.target.value;
         document.getElementById('btn-start-meeting').onclick = () => { 
             socket.emit('startMeeting', myRoomId, { 
@@ -465,7 +463,7 @@
         
         socket.on('meetingStarted', d => { 
             maxRounds = parseInt(d.rounds); 
-            isTextOnlyMode = d.textOnly; // ★テキストモードを受信
+            isTextOnlyMode = d.textOnly; 
             document.getElementById('display-theme').innerText = "テーマ: " + d.theme; 
             document.getElementById('final-theme-text').innerText = d.theme; 
             document.getElementById('btn-show-history').style.display = 'block'; 
@@ -478,7 +476,6 @@
         socket.on('startTimer', d => {
             showScreen('step-drafting'); document.getElementById('host-round-controls').style.display = 'none'; const t = document.getElementById('timerDisplay'); t.style.display = 'block';
             
-            // ★UI追加①：現在の巡回数を表示
             document.getElementById('round-counter-display').innerText = `${d.currentRound} / ${maxRounds} 巡目`;
 
             if (isHost) {
@@ -491,7 +488,6 @@
                 document.getElementById('pick-area').style.display = 'block'; 
                 document.getElementById('wait-pick-msg').style.display = 'none'; 
                 
-                // ★追加：テキストモードと手書きモードのUI切り替え
                 if (isTextOnlyMode) {
                     document.getElementById('canvas-container').style.display = 'none';
                     document.getElementById('text-input-container').style.display = 'block';
@@ -501,7 +497,6 @@
                     document.getElementById('text-input-container').style.display = 'none';
                     ctx.clearRect(0, 0, canvas.width, canvas.height); 
                 }
-
             } else { 
                 document.getElementById('pick-area').style.display = 'none'; 
                 document.getElementById('wait-pick-msg').innerText = "あなたは獲得済みです。待機中..."; 
@@ -510,12 +505,26 @@
             
             if (isHost) { document.getElementById('host-status-area').style.display = 'block'; const sCont = document.getElementById('status-container'); sCont.innerHTML = ''; currentPlayers.forEach(p => { if(!d.successMembers.includes(p.id)) { sCont.innerHTML += `<div class="status-item" id="status-${p.id}"><span class="status-dot"></span>${p.name}</div>`; } }); }
             let left = d.seconds; t.innerText = left; if(timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => { left--; t.innerText = left; if(left <= 0) { clearInterval(timerInterval); t.style.display = 'none'; if (isMyTurn) forceSubmitPick(); } }, 1000);
+            timerInterval = setInterval(() => { 
+                left--; t.innerText = left; 
+                if (left <= 0) { 
+                    clearInterval(timerInterval); 
+                    t.style.display = 'none'; 
+                    if (isMyTurn) forceSubmitPick(); 
+                    
+                    // ★今回のバグ修正：タイマーが0になったら、絶対に強制進行ボタンを解禁する！
+                    if (isHost) {
+                        const btnForce = document.getElementById('btn-force-judgment');
+                        btnForce.disabled = false;
+                        btnForce.innerText = "時間切れ（強制的に公開へ進む）";
+                        btnForce.style.backgroundColor = "var(--accent)";
+                    }
+                } 
+            }, 1000);
         });
 
         document.getElementById('btn-submit-early').onclick = () => { forceSubmitPick(); };
 
-        // ★追加：提出時に、テキストモードなら裏側で画像に変換して送る
         function forceSubmitPick() { 
             if(!isMyTurn) return; 
             isMyTurn = false; 
