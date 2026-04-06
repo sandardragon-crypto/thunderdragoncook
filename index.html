@@ -350,6 +350,13 @@
         let timerInterval;
         let isTextOnlyMode = false;
 
+        // ★スマホ通信切断（スリープ）からの復帰時に、裏側でこっそり再入室してフリーズを防ぐ！
+        socket.on('connect', () => {
+            if (myRoomId) {
+                socket.emit('reconnectRoomOnly', myRoomId);
+            }
+        });
+
         window.onload = () => {
             const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(window.location.href);
             document.getElementById('qr-img').src = qrUrl;
@@ -506,7 +513,6 @@
             if (isHost) { document.getElementById('host-status-area').style.display = 'block'; const sCont = document.getElementById('status-container'); sCont.innerHTML = ''; currentPlayers.forEach(p => { if(!d.successMembers.includes(p.id)) { sCont.innerHTML += `<div class="status-item" id="status-${p.id}"><span class="status-dot"></span>${p.name}</div>`; } }); }
             let left = d.seconds; t.innerText = left; if(timerInterval) clearInterval(timerInterval);
             
-            // ★バグの元だった強制解除コードを削除し、純粋なタイマーのみに修正
             timerInterval = setInterval(() => { 
                 left--; t.innerText = left; 
                 if (left <= 0) { 
